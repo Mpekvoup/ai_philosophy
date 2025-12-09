@@ -46,7 +46,14 @@
                 </div>
                 <div id="loading" class="loading" style="display: none;">
                     <div class="spinner"></div>
-                    <p>Философ размышляет...</p>
+                    <p>Философ размышляет и готовит аудио...</p>
+                </div>
+
+                <!-- Контролы для аудио -->
+                <div id="audioControls" class="audio-controls" style="display: none;">
+                    <button id="replayBtn" class="audio-btn" title="Прослушать снова">
+                        🔊 Прослушать снова
+                    </button>
                 </div>
             </div>
 
@@ -60,9 +67,12 @@
         </main>
 
         <footer>
-            <p>Powered by Google Gemini Cloud API + Web Speech API</p>
+            <p>Powered by Google Gemini Cloud API + Web Speech API + Edge-TTS</p>
             <p class="browser-support">
                 ⚠️ Требуется Chrome или Edge для работы распознавания речи
+            </p>
+            <p class="tts-info">
+                🔊 Озвучивание через Microsoft Edge TTS (бесплатно, высокое качество)
             </p>
         </footer>
     </div>

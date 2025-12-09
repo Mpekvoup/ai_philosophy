@@ -301,3 +301,73 @@ footer {
         font-size: 1rem;
     }
 }
+
+/* Audio Controls */
+.audio-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.audio-btn,
+.replay-btn {
+    background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.audio-btn:hover,
+.replay-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.audio-btn:active,
+.replay-btn:active {
+    transform: translateY(0);
+}
+
+/* Status playing */
+.status.playing {
+    border-color: var(--success-color);
+    background: rgba(16, 185, 129, 0.1);
+    animation: audio-pulse 1.5s infinite;
+}
+
+@keyframes audio-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+    }
+}
+
+/* History Footer */
+.history-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.history-item .replay-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+/* TTS Info */
+.tts-info {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--success-color);
+}

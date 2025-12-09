@@ -5,7 +5,9 @@ class PhilosopherApp {
         this.recognition = null;
         this.isRecording = false;
         this.currentTranscript = '';
-        
+        this.currentAudio = null;  // Текущий аудио плеер
+        this.currentAudioBlob = null;  // Текущий аудио blob для повтора
+
         // DOM элементы
         this.recordBtn = document.getElementById('recordBtn');
         this.status = document.getElementById('status');
@@ -13,7 +15,8 @@ class PhilosopherApp {
         this.answer = document.getElementById('answer');
         this.loading = document.getElementById('loading');
         this.history = document.getElementById('history');
-        
+        this.audioControls = document.getElementById('audioControls');
+
         this.init();
     }
     
@@ -24,14 +27,20 @@ class PhilosopherApp {
             this.recordBtn.disabled = true;
             return;
         }
-        
+
         // Инициализируем распознавание речи
         this.setupSpeechRecognition();
-        
+
         // Обработчик кнопки записи
         this.recordBtn.addEventListener('click', () => this.toggleRecording());
-        
-        console.log('AI-Философ инициализирован');
+
+        // Обработчик кнопки повтора аудио
+        const replayBtn = document.getElementById('replayBtn');
+        if (replayBtn) {
+            replayBtn.addEventListener('click', () => this.replayAudio());
+        }
+
+        console.log('AI-Философ инициализирован с поддержкой Edge-TTS');
     }
     
     setupSpeechRecognition() {
@@ -150,8 +159,11 @@ class PhilosopherApp {
             // Показываем индикатор загрузки
             this.loading.style.display = 'flex';
             this.answer.style.display = 'none';
+            if (this.audioControls) {
+                this.audioControls.style.display = 'none';
+            }
             this.updateStatus('💭 Философ размышляет...', 'thinking');
-            
+
             // Отправляем запрос на сервер
             const response = await fetch('/api/ask/', {
                 method: 'POST',
@@ -160,24 +172,32 @@ class PhilosopherApp {
                 },
                 body: JSON.stringify({ question: question })
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+
             // Скрываем индикатор загрузки
             this.loading.style.display = 'none';
             this.answer.style.display = 'block';
-            
+
             // Отображаем ответ
             this.answer.textContent = data.answer;
-            this.updateStatus('✅ Ответ получен', 'success');
-            
+
+            // Обрабатываем аудио, если оно есть
+            if (data.audio) {
+                this.updateStatus('🔊 Воспроизведение ответа...', 'playing');
+                await this.playAudio(data.audio);
+                this.updateStatus('✅ Ответ получен', 'success');
+            } else {
+                this.updateStatus('✅ Ответ получен (без аудио)', 'success');
+            }
+
             // Добавляем в историю
-            this.addToHistory(question, data.answer);
-            
+            this.addToHistory(question, data.answer, data.audio);
+
         } catch (error) {
             console.error('Ошибка при отправке вопроса:', error);
             this.loading.style.display = 'none';
@@ -185,21 +205,110 @@ class PhilosopherApp {
             this.showError('Не удалось получить ответ от философа. Проверьте настройки API.');
         }
     }
+
+    async playAudio(audioBase64) {
+        try {
+            // Останавливаем текущее воспроизведение, если есть
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+
+            // Декодируем base64 в blob
+            const audioBlob = this.base64ToBlob(audioBase64, 'audio/mp3');
+            this.currentAudioBlob = audioBlob;
+
+            // Создаем URL для blob
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            // Создаем аудио элемент
+            this.currentAudio = new Audio(audioUrl);
+
+            // Показываем контролы
+            if (this.audioControls) {
+                this.audioControls.style.display = 'flex';
+            }
+
+            // Обработчик окончания воспроизведения
+            this.currentAudio.addEventListener('ended', () => {
+                this.updateStatus('✅ Воспроизведение завершено', 'success');
+            });
+
+            // Обработчик ошибки
+            this.currentAudio.addEventListener('error', (e) => {
+                console.error('Ошибка воспроизведения аудио:', e);
+                this.updateStatus('⚠️ Ошибка воспроизведения аудио', 'error');
+            });
+
+            // Воспроизводим аудио
+            await this.currentAudio.play();
+
+        } catch (error) {
+            console.error('Ошибка при воспроизведении аудио:', error);
+            this.updateStatus('⚠️ Не удалось воспроизвести аудио', 'error');
+        }
+    }
+
+    base64ToBlob(base64, mimeType) {
+        // Декодируем base64 в бинарные данные
+        const byteCharacters = atob(base64);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        return new Blob(byteArrays, { type: mimeType });
+    }
+
+    replayAudio() {
+        if (this.currentAudioBlob) {
+            const audioUrl = URL.createObjectURL(this.currentAudioBlob);
+            this.currentAudio = new Audio(audioUrl);
+            this.currentAudio.play();
+            this.updateStatus('🔊 Повторное воспроизведение...', 'playing');
+        }
+    }
     
-    addToHistory(question, answer) {
+    addToHistory(question, answer, audioBase64 = null) {
         const timestamp = new Date().toLocaleTimeString('ru-RU', {
             hour: '2-digit',
             minute: '2-digit'
         });
-        
+
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
+
+        // Добавляем кнопку воспроизведения, если есть аудио
+        const audioButton = audioBase64
+            ? `<button class="replay-btn" title="Воспроизвести ответ">🔊 Прослушать</button>`
+            : '';
+
         historyItem.innerHTML = `
             <div class="question">❓ ${question}</div>
             <div class="answer">💭 ${answer}</div>
-            <div class="timestamp">⏰ ${timestamp}</div>
+            <div class="history-footer">
+                <div class="timestamp">⏰ ${timestamp}</div>
+                ${audioButton}
+            </div>
         `;
-        
+
+        // Если есть аудио, добавляем обработчик клика
+        if (audioBase64) {
+            const replayBtn = historyItem.querySelector('.replay-btn');
+            replayBtn.addEventListener('click', () => {
+                this.playAudio(audioBase64);
+            });
+        }
+
         // Добавляем в начало истории
         this.history.insertBefore(historyItem, this.history.firstChild);
     }
