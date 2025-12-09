@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Философ | Голосовой помощник</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 AI-Философ</h1>
+            <p class="subtitle">Задавайте философские вопросы голосом</p>
+        </header>
+
+        <main>
+            <!-- Статус распознавания речи -->
+            <div class="status-card">
+                <div id="status" class="status">
+                    <span class="status-icon">🎤</span>
+                    <span class="status-text">Нажмите на кнопку, чтобы начать</span>
+                </div>
+            </div>
+
+            <!-- Кнопка записи -->
+            <div class="controls">
+                <button id="recordBtn" class="record-btn" aria-label="Начать/остановить запись">
+                    <span class="btn-icon">🎤</span>
+                    <span class="btn-text">Нажмите, чтобы говорить</span>
+                </button>
+            </div>
+
+            <!-- Распознанный текст -->
+            <div class="transcript-container">
+                <h3>Ваш вопрос:</h3>
+                <div id="transcript" class="transcript">
+                    Здесь появится ваш вопрос...
+                </div>
+            </div>
+
+            <!-- Ответ философа -->
+            <div class="answer-container">
+                <h3>💭 Философский ответ:</h3>
+                <div id="answer" class="answer">
+                    Ответ появится здесь...
+                </div>
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Философ размышляет...</p>
+                </div>
+            </div>
+
+            <!-- История диалога -->
+            <div class="history-container">
+                <h3>📜 История диалога</h3>
+                <div id="history" class="history">
+                    <!-- История будет добавляться динамически -->
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Google Gemini Cloud API + Web Speech API</p>
+            <p class="browser-support">
+                ⚠️ Требуется Chrome или Edge для работы распознавания речи
+            </p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
