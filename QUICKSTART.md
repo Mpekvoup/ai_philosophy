@@ -16,6 +16,9 @@ source venv/bin/activate
 
 # Установите зависимости
 pip install -r requirements.txt
+
+# ВАЖНО: Убедитесь, что edge-tts обновлен
+pip install --upgrade edge-tts
 ```
 
 ## 2️⃣ Настройка API ключа
@@ -75,4 +78,15 @@ http://localhost:8000
 
 ## 🆘 Проблемы?
 
-Смотрите раздел "Решение проблем" в README.md
+### Ошибка 403 от Edge-TTS?
+```bash
+# Обновите edge-tts
+pip install --upgrade edge-tts
+
+# Перезапустите сервер
+python manage.py runserver
+```
+
+### Подробное устранение неполадок:
+- Общие проблемы: см. README.md раздел "Решение проблем"
+- Проблемы с TTS: см. [TROUBLESHOOTING_TTS.md](TROUBLESHOOTING_TTS.md)
