@@ -18,6 +18,7 @@ class PhilosopherApp {
         this.loading = document.getElementById('loading');
         this.history = document.getElementById('history');
         this.audioControls = document.getElementById('audioControls');
+        this.speakingAnimation = document.getElementById('speakingAnimation');
 
         this.init();
     }
@@ -217,17 +218,20 @@ class PhilosopherApp {
 
             // Скрываем индикатор загрузки
             this.loading.style.display = 'none';
-            this.answer.style.display = 'block';
 
-            // Отображаем ответ
+            // Сохраняем ответ (но пока не показываем текст)
             this.answer.textContent = data.answer;
 
             // Обрабатываем аудио, если оно есть
             if (data.audio) {
-                this.updateStatus('🔊 Воспроизведение ответа...', 'playing');
+                this.updateStatus('🔊 AI-Философ говорит...', 'playing');
                 await this.playAudio(data.audio);
+                // После воспроизведения показываем текст
+                this.answer.style.display = 'block';
                 this.updateStatus('✅ Ответ получен', 'success');
             } else {
+                // Если нет аудио - сразу показываем текст
+                this.answer.style.display = 'block';
                 this.updateStatus('✅ Ответ получен (без аудио)', 'success');
             }
 
@@ -250,6 +254,13 @@ class PhilosopherApp {
                 this.currentAudio = null;
             }
 
+            // Показываем анимацию говорения, скрываем текст
+            this.speakingAnimation.style.display = 'flex';
+            this.answer.style.display = 'none';
+            if (this.audioControls) {
+                this.audioControls.style.display = 'none';
+            }
+
             // Декодируем base64 в blob
             const audioBlob = this.base64ToBlob(audioBase64, 'audio/mp3');
             this.currentAudioBlob = audioBlob;
@@ -260,19 +271,23 @@ class PhilosopherApp {
             // Создаем аудио элемент
             this.currentAudio = new Audio(audioUrl);
 
-            // Показываем контролы
-            if (this.audioControls) {
-                this.audioControls.style.display = 'flex';
-            }
-
             // Обработчик окончания воспроизведения
             this.currentAudio.addEventListener('ended', () => {
+                // Скрываем анимацию, показываем текст и контролы
+                this.speakingAnimation.style.display = 'none';
+                this.answer.style.display = 'block';
+                if (this.audioControls) {
+                    this.audioControls.style.display = 'flex';
+                }
                 this.updateStatus('✅ Воспроизведение завершено', 'success');
             });
 
             // Обработчик ошибки
             this.currentAudio.addEventListener('error', (e) => {
                 console.error('Ошибка воспроизведения аудио:', e);
+                // При ошибке тоже скрываем анимацию и показываем текст
+                this.speakingAnimation.style.display = 'none';
+                this.answer.style.display = 'block';
                 this.updateStatus('⚠️ Ошибка воспроизведения аудио', 'error');
             });
 
@@ -281,6 +296,9 @@ class PhilosopherApp {
 
         } catch (error) {
             console.error('Ошибка при воспроизведении аудио:', error);
+            // При ошибке скрываем анимацию и показываем текст
+            this.speakingAnimation.style.display = 'none';
+            this.answer.style.display = 'block';
             this.updateStatus('⚠️ Не удалось воспроизвести аудио', 'error');
         }
     }
@@ -307,10 +325,28 @@ class PhilosopherApp {
 
     replayAudio() {
         if (this.currentAudioBlob) {
+            // Показываем анимацию, скрываем текст
+            this.speakingAnimation.style.display = 'flex';
+            this.answer.style.display = 'none';
+            if (this.audioControls) {
+                this.audioControls.style.display = 'none';
+            }
+
             const audioUrl = URL.createObjectURL(this.currentAudioBlob);
             this.currentAudio = new Audio(audioUrl);
+
+            // Обработчик окончания воспроизведения
+            this.currentAudio.addEventListener('ended', () => {
+                this.speakingAnimation.style.display = 'none';
+                this.answer.style.display = 'block';
+                if (this.audioControls) {
+                    this.audioControls.style.display = 'flex';
+                }
+                this.updateStatus('✅ Воспроизведение завершено', 'success');
+            });
+
             this.currentAudio.play();
-            this.updateStatus('🔊 Повторное воспроизведение...', 'playing');
+            this.updateStatus('🔊 AI-Философ говорит...', 'playing');
         }
     }
     
