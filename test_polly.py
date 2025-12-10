@@ -68,7 +68,7 @@ def test_aws_polly():
             Text=text,
             OutputFormat='mp3',
             VoiceId=voice_id,
-            Engine='neural',
+            Engine='standard',  # Русские голоса поддерживают только standard
             LanguageCode='ru-RU'
         )
         
@@ -98,7 +98,7 @@ def test_aws_polly():
         print("🔍 Возможные причины:")
         print("1. Неверные AWS credentials")
         print("2. Нет доступа к Polly в IAM")
-        print("3. Регион не поддерживает Neural voices")
+        print("3. Регион не поддерживает выбранный голос")
         print("4. Превышена квота free tier")
         print()
         print("💡 Решения:")
@@ -116,12 +116,12 @@ def test_aws_polly():
 
 def list_russian_voices(polly_client):
     """Список доступных русских голосов."""
-    print("\n🗣️  Доступные русские Neural голоса:")
+    print("\n🗣️  Доступные русские голоса:")
     print("-" * 50)
-    
+
     try:
         response = polly_client.describe_voices(
-            Engine='neural',
+            Engine='standard',
             LanguageCode='ru-RU'
         )
         

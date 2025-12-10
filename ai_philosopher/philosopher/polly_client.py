@@ -1,6 +1,6 @@
 """
 AWS Polly клиент для озвучивания текста.
-Amazon Polly - профессиональный нейронный TTS.
+Amazon Polly - профессиональный TTS сервис.
 """
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 class PollyTTSClient:
     """Класс для генерации речи из текста через AWS Polly."""
     
-    # Лучшие русские нейронные голоса AWS Polly
+    # Лучшие русские голоса AWS Polly (Standard engine)
     RUSSIAN_VOICES = {
-        'female': 'Tatyana',  # Женский голос (Neural)
-        'male': 'Maxim',      # Мужской голос (Neural)
+        'female': 'Tatyana',  # Женский голос (Standard)
+        'male': 'Maxim',      # Мужской голос (Standard)
     }
     
     def __init__(self, voice='female'):
@@ -64,7 +64,7 @@ class PollyTTSClient:
                     Text=text,
                     OutputFormat='mp3',
                     VoiceId=self.voice_id,
-                    Engine='neural',  # Используем нейронный движок
+                    Engine='standard',  # Русские голоса поддерживают только standard engine
                     LanguageCode='ru-RU'
                 )
                 
@@ -113,7 +113,7 @@ class PollyTTSClient:
             temp_client = boto3.client('polly', region_name=region)
             
             response = temp_client.describe_voices(
-                Engine='neural',
+                Engine='standard',
                 LanguageCode='ru-RU'
             )
             

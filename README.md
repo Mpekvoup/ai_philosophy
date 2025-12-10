@@ -6,7 +6,7 @@
 
 - 🎤 **Real-time распознавание речи** через Web Speech API (встроен в Chrome/Edge)
 - 💭 **AI-философ на базе Google Gemini** (gemini-1.5-flash)
-- 🔊 **Голосовое озвучивание ответов** через AWS Polly Neural TTS (профессиональное качество)
+- 🔊 **Голосовое озвучивание ответов** через AWS Polly TTS (профессиональное качество)
 - 🚀 **Без записи аудиофайлов для ввода** - текстовая обработка вопросов
 - 📜 **История диалога с кнопками воспроизведения** - можно прослушать любой ответ повторно
 - 🎨 **Современный UI** - адаптивный дизайн с темной темой
@@ -160,12 +160,12 @@ ai_philosophy/
 ### Backend
 - **Django 5.0** - Python веб-фреймворк
 - **Google Generative AI** - интеграция с Gemini API
-- **Edge-TTS** - Microsoft Edge Text-to-Speech (бесплатный, высококачественный)
+- **boto3** - AWS SDK для интеграции с Polly TTS (профессиональный, стабильный)
 - **Python-dotenv** - управление переменными окружения
 
 ### AI
 - **Google Gemini 1.5 Flash** - быстрая и эффективная языковая модель
-- **Microsoft Edge Neural TTS** - голоса SvetlanaNeural (женский) и DmitryNeural (мужской)
+- **AWS Polly TTS** - голоса Tatyana (женский) и Maxim (мужской)
 - Специальный философский промпт для глубоких размышлений
 
 ## ⚙️ API Endpoints
@@ -224,10 +224,10 @@ ai_philosophy/
 - **Подробные инструкции:** см. [TROUBLESHOOTING_TTS.md](TROUBLESHOOTING_TTS.md)
 
 ### Плохое качество озвучивания
-- Edge-TTS использует нейронные голоса высокого качества
+- AWS Polly использует профессиональные голоса высокого качества
 - Качество зависит от скорости интернет-соединения
-- По умолчанию используется женский голос (SvetlanaNeural)
-- Можно изменить на мужской голос в `tts_client.py`
+- По умолчанию используется женский голос (Tatyana)
+- Можно изменить на мужской голос в `polly_client.py`
 
 ## 📝 Настройки
 
@@ -242,14 +242,14 @@ ai_philosopher/philosopher/gemini_client.py
 
 Чтобы изменить голос озвучивания, отредактируйте файл:
 ```
-ai_philosopher/philosopher/tts_client.py
+ai_philosopher/philosopher/polly_client.py
 ```
 
 Доступные голоса:
-- `ru-RU-SvetlanaNeural` - женский голос (по умолчанию)
-- `ru-RU-DmitryNeural` - мужской голос
+- `Tatyana` - женский голос (по умолчанию)
+- `Maxim` - мужской голос
 
-Пример изменения в `__init__`:
+Пример изменения в `RUSSIAN_VOICES`:
 ```python
 def __init__(self, voice='male'):  # Изменить на 'male'
     self.voice = self.RUSSIAN_VOICES.get(voice, self.RUSSIAN_VOICES['male'])
