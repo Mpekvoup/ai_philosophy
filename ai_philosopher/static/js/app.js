@@ -40,7 +40,7 @@ class PhilosopherApp {
             replayBtn.addEventListener('click', () => this.replayAudio());
         }
 
-        console.log('AI-Философ инициализирован с поддержкой Edge-TTS');
+        console.log('AI-Философ инициализирован с поддержкой AWS Polly');
     }
     
     setupSpeechRecognition() {

@@ -10,7 +10,7 @@ import base64
 import logging
 
 from .gemini_client import PhilosopherAI
-from .tts_client import TextToSpeechClient
+from .polly_client import PollyTTSClient
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,9 @@ def ask_philosopher(request):
 
         logger.info(f"Получен ответ от Gemini: {answer[:100]}...")
 
-        # Генерируем аудио из ответа через Edge-TTS
+        # Генерируем аудио из ответа через AWS Polly
         try:
-            tts_client = TextToSpeechClient(voice=voice)
+            tts_client = PollyTTSClient(voice=voice)
             audio_bytes = tts_client.generate_audio(answer)
 
             # Кодируем аудио в base64 для передачи в JSON
