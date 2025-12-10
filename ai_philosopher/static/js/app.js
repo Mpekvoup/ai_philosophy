@@ -7,6 +7,8 @@ class PhilosopherApp {
         this.currentTranscript = '';
         this.currentAudio = null;  // Текущий аудио плеер
         this.currentAudioBlob = null;  // Текущий аудио blob для повтора
+        this.noSpeechCount = 0;  // Счетчик ошибок no-speech
+        this.maxNoSpeechRetries = 3;  // Максимум попыток перезапуска
 
         // DOM элементы
         this.recordBtn = document.getElementById('recordBtn');
@@ -73,13 +75,14 @@ class PhilosopherApp {
             this.recognition.start();
             this.isRecording = true;
             this.currentTranscript = '';
-            
+            this.noSpeechCount = 0;  // Сбрасываем счетчик
+
             // Обновляем UI
             this.recordBtn.classList.add('recording');
             this.recordBtn.querySelector('.btn-text').textContent = 'Говорите... (нажмите, чтобы остановить)';
             this.updateStatus('🎤 Слушаю...', 'listening');
             this.transcript.textContent = 'Говорите ваш вопрос...';
-            
+
         } catch (error) {
             console.error('Ошибка при запуске записи:', error);
             this.showError('Не удалось запустить запись. Проверьте разрешения для микрофона.');
@@ -125,14 +128,29 @@ class PhilosopherApp {
     }
     
     onRecognitionError(event) {
-        console.error('Ошибка распознавания:', event.error);
-        
+        console.log('Событие распознавания:', event.error);
+
+        // Обработка no-speech отдельно - это нормальная ситуация
+        if (event.error === 'no-speech') {
+            this.noSpeechCount++;
+            console.log(`No speech detected (попытка ${this.noSpeechCount}/${this.maxNoSpeechRetries})`);
+
+            // Если не превышен лимит попыток - автоматически перезапускаем
+            if (this.noSpeechCount < this.maxNoSpeechRetries && this.isRecording) {
+                this.updateStatus('🎤 Слушаю... (говорите громче)', 'listening');
+                // Перезапуск произойдет автоматически через onRecognitionEnd
+                return;
+            } else if (this.noSpeechCount >= this.maxNoSpeechRetries) {
+                this.showError('Речь не обнаружена. Попробуйте говорить громче или проверьте микрофон.');
+                this.resetRecording();
+                return;
+            }
+        }
+
+        // Критические ошибки
         let errorMessage = 'Ошибка распознавания речи';
-        
+
         switch (event.error) {
-            case 'no-speech':
-                errorMessage = 'Речь не обнаружена. Попробуйте снова.';
-                break;
             case 'audio-capture':
                 errorMessage = 'Микрофон недоступен. Проверьте подключение.';
                 break;
@@ -142,16 +160,34 @@ class PhilosopherApp {
             case 'network':
                 errorMessage = 'Ошибка сети. Проверьте подключение к интернету.';
                 break;
+            case 'aborted':
+                // Пользователь остановил запись - не показываем ошибку
+                console.log('Распознавание остановлено пользователем');
+                return;
         }
-        
+
         this.showError(errorMessage);
         this.resetRecording();
     }
     
     onRecognitionEnd() {
         console.log('Распознавание речи завершено');
-        this.isRecording = false;
-        this.resetRecording();
+
+        // Если пользователь все еще в режиме записи и не превышен лимит no-speech
+        if (this.isRecording && this.noSpeechCount > 0 && this.noSpeechCount < this.maxNoSpeechRetries) {
+            console.log('Автоматический перезапуск распознавания...');
+            try {
+                this.recognition.start();
+            } catch (error) {
+                console.error('Ошибка при перезапуске:', error);
+                this.resetRecording();
+            }
+        } else {
+            this.isRecording = false;
+            if (this.noSpeechCount < this.maxNoSpeechRetries) {
+                this.resetRecording();
+            }
+        }
     }
     
     async sendQuestionToServer(question) {
